@@ -84,7 +84,26 @@ export const getLevelProgress = (currentXP: number): number => {
   return Math.floor((progressXP / totalNeededXP) * 100);
 };
 
-// 게임 통계 불러오기
+// GameStats 타입 가드 함수
+const isValidGameStats = (data: any): data is GameStats => {
+  return (
+    data &&
+    typeof data === 'object' &&
+    typeof data.level === 'number' &&
+    typeof data.xp === 'number' &&
+    typeof data.totalGachas === 'number' &&
+    typeof data.perfectTimings === 'number' &&
+    Array.isArray(data.achievements) &&
+    Array.isArray(data.unlockedThemes) &&
+    data.level >= 1 &&
+    data.level <= 1000 &&
+    data.xp >= 0 &&
+    data.totalGachas >= 0 &&
+    data.perfectTimings >= 0
+  );
+};
+
+// 게임 통계 불러오기 (보안 강화)
 export const loadGameStats = (): GameStats => {
   try {
     const stored = localStorage.getItem(GAME_STATS_KEY);
@@ -92,17 +111,17 @@ export const loadGameStats = (): GameStats => {
     
     const parsed = JSON.parse(stored);
     
-    // 구조 검증
-    return {
-      level: parsed.level || 1,
-      xp: parsed.xp || 0,
-      totalGachas: parsed.totalGachas || 0,
-      perfectTimings: parsed.perfectTimings || 0,
-      achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
-      unlockedThemes: Array.isArray(parsed.unlockedThemes) ? parsed.unlockedThemes : ['default'],
-    };
+    // 데이터 구조 검증
+    if (!isValidGameStats(parsed)) {
+      console.warn('Invalid game stats detected, resetting to default');
+      localStorage.removeItem(GAME_STATS_KEY);
+      return { ...defaultGameStats };
+    }
+    
+    return parsed;
   } catch (error) {
     console.error('Failed to load game stats:', error);
+    localStorage.removeItem(GAME_STATS_KEY);
     return { ...defaultGameStats };
   }
 };

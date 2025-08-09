@@ -58,4 +58,29 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'chakra-ui': ['@chakra-ui/react', '@chakra-ui/icons'],
+          'framer-motion': ['framer-motion'],
+          'router': ['react-router-dom'],
+          'confetti': ['canvas-confetti'],
+          'react-vendor': ['react', 'react-dom']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+    target: 'esnext',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@chakra-ui/react', 'framer-motion']
+  }
 })

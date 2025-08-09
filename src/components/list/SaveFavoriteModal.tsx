@@ -18,6 +18,7 @@ import {
 } from '@chakra-ui/react';
 import { useApp } from '../../context/AppContext';
 import type { Item } from '../../types';
+import { sanitizeFileName } from '../../utils/sanitization';
 
 interface SaveFavoriteModalProps {
   isOpen: boolean;
@@ -77,7 +78,8 @@ const SaveFavoriteModal: React.FC<SaveFavoriteModalProps> = ({
     setError('');
 
     try {
-      addFavorite(name.trim(), items);
+      const sanitizedName = sanitizeFileName(name);
+      addFavorite(sanitizedName, items);
       
       toast({
         title: '즐겨찾기가 저장되었습니다',

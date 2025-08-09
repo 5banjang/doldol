@@ -1,8 +1,20 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { ChakraProvider, extendTheme, Spinner, Box, Center } from '@chakra-ui/react';
+import { Suspense, lazy } from 'react';
 import { AppProvider } from './context/AppContext';
-import ListPage from './pages/ListPage';
-import GachaPage from './pages/GachaPage';
+
+// Lazy load pages for better performance
+const ListPage = lazy(() => import('./pages/ListPage'));
+const GachaPage = lazy(() => import('./pages/GachaPage'));
+
+// Loading component
+const LoadingSpinner = () => (
+  <Center h="100vh" bg="#F7F7F7">
+    <Box textAlign="center">
+      <Spinner size="xl" color="#FF6B6B" thickness="4px" />
+    </Box>
+  </Center>
+);
 
 const theme = extendTheme({
   fonts: {
@@ -30,10 +42,12 @@ function App() {
     <ChakraProvider theme={theme}>
       <AppProvider>
         <Router>
-          <Routes>
-            <Route path="/" element={<ListPage />} />
-            <Route path="/gacha" element={<GachaPage />} />
-          </Routes>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="/" element={<ListPage />} />
+              <Route path="/gacha" element={<GachaPage />} />
+            </Routes>
+          </Suspense>
         </Router>
       </AppProvider>
     </ChakraProvider>

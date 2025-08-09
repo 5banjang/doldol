@@ -99,7 +99,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ item, showResult, timingA
           duration: 2,
           repeat: Infinity,
           ease: "easeInOut",
-        }}
+        } as any}
       />
 
       <MotionBox

@@ -9,6 +9,7 @@ import {
 } from '@chakra-ui/react';
 import { AddIcon, StarIcon } from '@chakra-ui/icons';
 import { useApp } from '../../context/AppContext';
+import { sanitizeWithLength } from '../../utils/sanitization';
 
 interface ItemInputProps {
   onSave: () => void;
@@ -25,8 +26,9 @@ const ItemInput: React.FC<ItemInputProps> = ({ onSave }) => {
   };
 
   const handleAddItem = () => {
-    if (inputValue.trim()) {
-      addItem(inputValue);
+    const sanitized = sanitizeWithLength(inputValue, 100);
+    if (sanitized) {
+      addItem(sanitized);
       setInputValue('');
     }
   };
