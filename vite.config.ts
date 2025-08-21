@@ -4,6 +4,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // 이 부분이 가장 중요합니다. 앱의 기본 경로를 설정합니다.
+  base: "/doldol/",
+
   plugins: [
     react(),
     VitePWA({
@@ -17,8 +20,9 @@ export default defineConfig({
         background_color: '#F7F7F7',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        // 이 부분도 중요합니다. PWA의 작동 범위를 앱의 기본 경로와 일치시킵니다.
+        scope: '/doldol/',
+        start_url: '/doldol/',
         categories: ['entertainment', 'utilities'],
         lang: 'ko',
         icons: [
@@ -58,29 +62,4 @@ export default defineConfig({
       }
     })
   ],
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'chakra-ui': ['@chakra-ui/react', '@chakra-ui/icons'],
-          'framer-motion': ['framer-motion'],
-          'router': ['react-router-dom'],
-          'confetti': ['canvas-confetti'],
-          'react-vendor': ['react', 'react-dom']
-        }
-      }
-    },
-    chunkSizeWarningLimit: 1000,
-    target: 'esnext',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom', '@chakra-ui/react', 'framer-motion']
-  }
 })

@@ -9,6 +9,7 @@ import {
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import type { TimingGame } from '../../types';
+import { triggerHapticFeedback } from '../../utils/gameEngine';
 
 interface TimingStopButtonProps {
   timingGame: TimingGame;
@@ -54,19 +55,23 @@ const TimingStopButton: React.FC<TimingStopButtonProps> = ({
     
     let accuracy: 'perfect' | 'good' | 'miss';
     
+    // 동적 타이밍 존 계산
+    const perfectZoneSize = timingGame.targetZoneEnd - timingGame.targetZoneStart;
+    const goodZoneBuffer = perfectZoneSize * 0.8; // perfect zone의 80% 크기를 버퍼로 사용
+    
     if (currentTime >= timingGame.targetZoneStart && currentTime <= timingGame.targetZoneEnd) {
-      // 완벽한 타이밍 존 (1.5-2.5초)
       accuracy = 'perfect';
     } else if (
-      (currentTime >= timingGame.targetZoneStart - 500 && currentTime < timingGame.targetZoneStart) ||
-      (currentTime > timingGame.targetZoneEnd && currentTime <= timingGame.targetZoneEnd + 500)
+      (currentTime >= timingGame.targetZoneStart - goodZoneBuffer && currentTime < timingGame.targetZoneStart) ||
+      (currentTime > timingGame.targetZoneEnd && currentTime <= timingGame.targetZoneEnd + goodZoneBuffer)
     ) {
-      // 좋은 타이밍 존 (완벽 타이밍 전후 0.5초)
       accuracy = 'good';
     } else {
-      // 놓친 타이밍
       accuracy = 'miss';
     }
+    
+    // 햅틱 피드백 추가
+    triggerHapticFeedback(accuracy);
     
     onStop(accuracy);
   };
@@ -84,7 +89,7 @@ const TimingStopButton: React.FC<TimingStopButtonProps> = ({
   if (!timingGame.isActive) return null;
 
   return (
-    <VStack spacing={4} w="full" maxW="400px">
+    <VStack spacing={4} w={{ base: "90vw", md: "400px" }} maxW="90vw">
       {/* 타이밍 바 */}
       <Box w="full" position="relative">
         <Progress
@@ -96,18 +101,18 @@ const TimingStopButton: React.FC<TimingStopButtonProps> = ({
           height="20px"
         />
         
-        {/* 완벽 타이밍 존 표시 */}
+        {/* 동적 완벽 타이밍 존 표시 */}
         <Box
           position="absolute"
           top="0"
-          left="50%"
-          width="33%"
+          left={`${timingGame.targetZonePosition - (timingGame.targetZoneEnd - timingGame.targetZoneStart) / animationDuration * 50}%`}
+          width={`${((timingGame.targetZoneEnd - timingGame.targetZoneStart) / animationDuration) * 100}%`}
           height="20px"
-          bg="green.200"
+          bg={timingGame.difficulty === 'expert' ? 'red.200' : timingGame.difficulty === 'hard' ? 'orange.200' : 'green.200'}
           borderRadius="full"
           border="2px solid"
-          borderColor="green.400"
-          opacity={0.7}
+          borderColor={timingGame.difficulty === 'expert' ? 'red.400' : timingGame.difficulty === 'hard' ? 'orange.400' : 'green.400'}
+          opacity={0.8}
         />
         
         {/* 현재 위치 표시 */}
@@ -135,13 +140,21 @@ const TimingStopButton: React.FC<TimingStopButtonProps> = ({
       {/* 타이밍 정보 */}
       <VStack spacing={2}>
         <Badge
-          colorScheme={progress >= 50 && progress <= 83 ? 'green' : 'red'}
+          colorScheme={
+            progress >= (timingGame.targetZoneStart / animationDuration) * 100 && 
+            progress <= (timingGame.targetZoneEnd / animationDuration) * 100 ? 'green' : 
+            timingGame.difficulty === 'expert' ? 'red' : 
+            timingGame.difficulty === 'hard' ? 'orange' : 'yellow'
+          }
           fontSize="md"
           px={3}
           py={1}
           borderRadius="full"
         >
-          {progress >= 50 && progress <= 83 ? '🎯 완벽 존!' : '⚡ 타이밍을 노려보세요!'}
+          {progress >= (timingGame.targetZoneStart / animationDuration) * 100 && 
+           progress <= (timingGame.targetZoneEnd / animationDuration) * 100 ? 
+           '🎯 완벽 존!' : 
+           `⚡ ${timingGame.difficulty.toUpperCase()} 모드`}
         </Badge>
         
         <Text fontSize="sm" color="gray.600">
@@ -151,15 +164,16 @@ const TimingStopButton: React.FC<TimingStopButtonProps> = ({
 
       {/* 스톱 버튼 */}
       <MotionButton
-        size="xl"
+        size={{ base: "lg", md: "xl" }}
         colorScheme={progress >= 50 && progress <= 83 ? 'green' : 'orange'}
         onClick={handleStop}
-        px={10}
-        py={6}
-        fontSize="xl"
+        px={{ base: 8, md: 10 }}
+        py={{ base: 4, md: 6 }}
+        fontSize={{ base: "lg", md: "xl" }}
         fontWeight="bold"
         borderRadius="full"
         boxShadow="0 6px 20px rgba(0,0,0,0.2)"
+        minH={{ base: "60px", md: "auto" }}
         _hover={{
           transform: 'translateY(-2px)',
           boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
@@ -185,7 +199,10 @@ const TimingStopButton: React.FC<TimingStopButtonProps> = ({
 
       {/* 힌트 텍스트 */}
       <Text fontSize="xs" color="gray.500" textAlign="center">
-        녹색 영역에서 멈추면 완벽한 타이밍! +15 XP 획득
+        {timingGame.difficulty === 'expert' ? '🔥 전문가 모드: +50 XP' :
+         timingGame.difficulty === 'hard' ? '💪 어려움 모드: +37 XP' :
+         timingGame.difficulty === 'normal' ? '⚡ 보통 모드: +30 XP' :
+         '🌟 쉬움 모드: +25 XP'}
       </Text>
     </VStack>
   );

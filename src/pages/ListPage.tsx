@@ -14,6 +14,7 @@ import ItemInput from '../components/list/ItemInput';
 import CurrentItemList from '../components/list/CurrentItemList';
 import FavoriteList from '../components/list/FavoriteList';
 import FloatingActionButton from '../components/common/FloatingActionButton';
+import SettingsButton from '../components/common/SettingsButton';
 import SaveFavoriteModal from '../components/list/SaveFavoriteModal';
 
 const ListPage: React.FC = () => {
@@ -101,6 +102,9 @@ const ListPage: React.FC = () => {
           disabled={!canStartGacha}
           count={state.currentItems.length}
         />
+
+        {/* 설정 버튼 */}
+        <SettingsButton />
 
         {/* 즐겨찾기 저장 모달 */}
         <SaveFavoriteModal

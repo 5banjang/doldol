@@ -15,6 +15,8 @@ import ActionButtons from '../components/gacha/ActionButtons';
 import AchievementNotification from '../components/gacha/AchievementNotification';
 import { selectRandomItem } from '../utils/helpers';
 import { loadGameStats, saveGameStats, updateGachaStats } from '../utils/gameStats';
+import { createTimingGame, calculateRewards, updateGameStats } from '../utils/gameEngine';
+import { useGameSettings } from '../context/GameSettingsContext';
 
 interface LocationState {
   items: Item[];
@@ -23,6 +25,7 @@ interface LocationState {
 const GachaPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { settings } = useGameSettings();
   
   // 게임 상태
   const [gameMode, setGameMode] = useState<GachaGameMode>('ready');
@@ -35,8 +38,10 @@ const GachaPage: React.FC = () => {
   const [timingGame, setTimingGame] = useState<TimingGame>({
     isActive: false,
     startTime: 0,
-    targetZoneStart: 1500, // 1.5초
-    targetZoneEnd: 2500,   // 2.5초
+    targetZoneStart: 1500,
+    targetZoneEnd: 2500,
+    targetZonePosition: 50,
+    difficulty: 'normal'
   });
   
   // 게임 통계 및 업적
@@ -58,27 +63,22 @@ const GachaPage: React.FC = () => {
     }
   }, [items.length, navigate]);
 
-  // 수동 가챠 시작
+  // 수동 가챠 시작 (프로그레시브 난이도 적용)
   const handleStartGacha = () => {
     setGameMode('animating');
     setShowResult(false);
     setSelectedItem(null);
     
-    // 타이밍 게임 초기화 및 시작
-    const startTime = Date.now();
-    setTimingGame({
-      isActive: true,
-      startTime,
-      targetZoneStart: 1500,
-      targetZoneEnd: 2500,
-    });
+    // 동적 타이밍 게임 생성 (설정 고려)
+    const dynamicTimingGame = createTimingGame(3000, gameStats, settings.difficulty);
+    setTimingGame(dynamicTimingGame);
     
     setTimeout(() => {
       setGameMode('timing');
     }, 500); // 애니메이션이 시작된 후 타이밍 게임 활성화
   };
 
-  // 타이밍 스톱 처리
+  // 타이밍 스톱 처리 (개선된 보상 시스템)
   const handleTimingStop = (accuracy: 'perfect' | 'good' | 'miss') => {
     setTimingAccuracy(accuracy);
     setTimingGame(prev => ({ ...prev, isActive: false }));
@@ -88,27 +88,30 @@ const GachaPage: React.FC = () => {
     const result = selectRandomItem(items);
     setSelectedItem(result);
 
-    // 게임 통계 업데이트
-    const { newStats, leveledUp: didLevelUp, newAchievements: earnedAchievements } = 
-      updateGachaStats(gameStats, accuracy);
-    
-    setGameStats(newStats);
-    saveGameStats(newStats);
-    
-    // XP 계산
-    let earnedXP = 10; // 기본 XP
-    if (accuracy === 'perfect') earnedXP += 15;
-    else if (accuracy === 'good') earnedXP += 5;
-    
+    // 개선된 XP 계산 (난이도와 연속 성공 고려)
+    const earnedXP = calculateRewards(accuracy, timingGame.difficulty, gameStats.consecutiveSuccess);
     setXpGained(earnedXP);
-    setNewAchievements(earnedAchievements);
-    setLeveledUp(didLevelUp);
-    setNewLevel(didLevelUp ? newStats.level : undefined);
 
-    // 결과 표시
+    // 게임 통계 업데이트 (새로운 시스템 사용)
+    const updatedStats = updateGameStats(gameStats, accuracy, earnedXP);
+    const didLevelUp = updatedStats.level > gameStats.level;
+    
+    setGameStats(updatedStats);
+    saveGameStats(updatedStats);
+    
+    // 레벨업 및 업적 처리
+    setLeveledUp(didLevelUp);
+    setNewLevel(didLevelUp ? updatedStats.level : undefined);
+    
+    // 기존 업적 시스템도 유지
+    const { newAchievements: earnedAchievements } = updateGachaStats(gameStats, accuracy);
+    setNewAchievements(earnedAchievements);
+
+    // miss일 경우 2초 쿨다운 적용
+    const resultDelay = accuracy === 'miss' ? 2000 : 1000;
     setTimeout(() => {
       setShowResult(true);
-    }, 1000);
+    }, resultDelay);
   };
 
   // 재시도

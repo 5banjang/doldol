@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ChakraProvider, extendTheme, Spinner, Box, Center } from '@chakra-ui/react';
 import { Suspense, lazy } from 'react';
 import { AppProvider } from './context/AppContext';
+import { GameSettingsProvider } from './context/GameSettingsContext';
 
 // Lazy load pages for better performance
 const ListPage = lazy(() => import('./pages/ListPage'));
@@ -40,16 +41,18 @@ const theme = extendTheme({
 function App() {
   return (
     <ChakraProvider theme={theme}>
-      <AppProvider>
-        <Router>
-          <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-              <Route path="/" element={<ListPage />} />
-              <Route path="/gacha" element={<GachaPage />} />
-            </Routes>
-          </Suspense>
-        </Router>
-      </AppProvider>
+      <GameSettingsProvider>
+        <AppProvider>
+         <Router basename="/doldol">
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                <Route path="/" element={<ListPage />} />
+                <Route path="/gacha" element={<GachaPage />} />
+              </Routes>
+            </Suspense>
+          </Router>
+        </AppProvider>
+      </GameSettingsProvider>
     </ChakraProvider>
   );
 }

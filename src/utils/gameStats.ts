@@ -8,6 +8,8 @@ export const defaultGameStats: GameStats = {
   xp: 0,
   totalGachas: 0,
   perfectTimings: 0,
+  consecutiveSuccess: 0,
+  consecutiveFails: 0,
   achievements: [],
   unlockedThemes: ['default'],
 };

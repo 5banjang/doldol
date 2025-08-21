@@ -22,57 +22,61 @@ const MotionText = motion(Text);
 const ResultDisplay: React.FC<ResultDisplayProps> = ({ item, showResult, timingAccuracy, xpGained }) => {
   useEffect(() => {
     if (showResult) {
-      // 타이밍 정확도에 따른 다른 색종이 효과
-      let colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38BA8'];
-      let particleCount = 50;
-      let duration = 3000;
+      // 단계별 축하 강도 조절 - 훨씬 절제된 효과
+      let colors = ['#FF6B6B', '#4ECDC4'];
+      let particleCount = 20;
 
       if (timingAccuracy === 'perfect') {
-        colors = ['#FFD700', '#FFA500', '#FF69B4', '#9370DB', '#00CED1'];
-        particleCount = 100;
-        duration = 5000;
+        colors = ['#FFD700', '#FFA500'];
+        particleCount = 30;
       } else if (timingAccuracy === 'good') {
-        colors = ['#32CD32', '#00FF7F', '#ADFF2F', '#98FB98'];
-        particleCount = 75;
-        duration = 4000;
+        colors = ['#32CD32', '#00FF7F'];
+        particleCount = 25;
+      } else if (timingAccuracy === 'miss') {
+        colors = ['#FFB6C1'];
+        particleCount = 10;
       }
 
-      const end = Date.now() + duration;
-      const interval = setInterval(() => {
-        if (Date.now() > end) {
-          clearInterval(interval);
-          return;
-        }
-
+      // 간단한 단발성 효과로 변경
+      const celebrationTimeout = setTimeout(() => {
+        // 중앙에서 한 번의 폭발 효과
         confetti({
           particleCount,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0, y: 0.8 },
-          colors,
-        });
-
-        confetti({
-          particleCount,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1, y: 0.8 },
-          colors,
-        });
-      }, timingAccuracy === 'perfect' ? 50 : 100);
-
-      // 초기 폭발 효과
-      setTimeout(() => {
-        confetti({
-          particleCount: timingAccuracy === 'perfect' ? 200 : particleCount * 2,
           angle: 90,
-          spread: 80,
-          origin: { x: 0.5, y: 0.6 },
+          spread: 45,
+          origin: { x: 0.5, y: 0.7 },
           colors,
+          gravity: 0.8,
+          scalar: 0.8
         });
-      }, 500);
 
-      return () => clearInterval(interval);
+        // perfect일 때만 양쪽에서 추가 효과
+        if (timingAccuracy === 'perfect') {
+          setTimeout(() => {
+            confetti({
+              particleCount: 15,
+              angle: 60,
+              spread: 35,
+              origin: { x: 0.2, y: 0.8 },
+              colors,
+              gravity: 0.6,
+              scalar: 0.6
+            });
+
+            confetti({
+              particleCount: 15,
+              angle: 120,
+              spread: 35,
+              origin: { x: 0.8, y: 0.8 },
+              colors,
+              gravity: 0.6,
+              scalar: 0.6
+            });
+          }, 300);
+        }
+      }, 200);
+
+      return () => clearTimeout(celebrationTimeout);
     }
   }, [showResult, timingAccuracy]);
 
@@ -80,24 +84,24 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ item, showResult, timingA
 
   return (
     <Box position="relative" w="full" display="flex" justifyContent="center">
-      {/* 배경 효과 */}
+      {/* 간소화된 배경 효과 */}
       <Box
         position="absolute"
-        top="-50px"
-        left="-50px"
-        w="400px"
-        h="400px"
-        bg="radial-gradient(circle, rgba(255, 230, 109, 0.3) 0%, transparent 70%)"
+        top="-20px"
+        left="-20px"
+        w="200px"
+        h="200px"
+        bg="radial-gradient(circle, rgba(255, 230, 109, 0.15) 0%, transparent 50%)"
         borderRadius="full"
         pointerEvents="none"
         as={MotionBox}
         animate={{
-          scale: [1, 1.5, 1],
-          opacity: [0.6, 0, 0.6],
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0, 0.3],
         }}
         transition={{
-          duration: 2,
-          repeat: Infinity,
+          duration: 1.5,
+          repeat: 2,
           ease: "easeInOut",
         } as any}
       />
@@ -115,20 +119,18 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ item, showResult, timingA
         zIndex={2}
       >
         <VStack gap={6}>
-          {/* 🎉 아이콘 */}
+          {/* 간소화된 아이콘 */}
           <MotionText
-            fontSize="4xl"
+            fontSize="2xl"
             animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 10, -10, 0],
+              scale: [1, 1.1, 1],
             }}
             transition={{
-              duration: 0.6,
-              repeat: Infinity,
-              repeatDelay: 2,
+              duration: 0.8,
+              repeat: 1,
             }}
           >
-            🎉
+            {timingAccuracy === 'perfect' ? '🏆' : timingAccuracy === 'good' ? '👍' : '😊'}
           </MotionText>
 
           {/* 타이밍 정확도 표시 */}

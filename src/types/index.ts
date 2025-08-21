@@ -39,6 +39,8 @@ export interface GameStats {
   xp: number;
   totalGachas: number;
   perfectTimings: number;
+  consecutiveSuccess: number;
+  consecutiveFails: number;
   achievements: string[];
   unlockedThemes: string[];
 }
@@ -48,8 +50,10 @@ export interface TimingGame {
   startTime: number;
   targetZoneStart: number;
   targetZoneEnd: number;
+  targetZonePosition: number;
   userStopTime?: number;
   accuracy?: 'perfect' | 'good' | 'miss';
+  difficulty: 'easy' | 'normal' | 'hard' | 'expert';
 }
 
 export type GachaGameMode = 'ready' | 'animating' | 'timing' | 'result';
@@ -61,4 +65,18 @@ export interface Achievement {
   icon: string;
   condition: (stats: GameStats) => boolean;
   xpReward: number;
+}
+
+export interface GameSettings {
+  difficulty: 'auto' | 'easy' | 'normal' | 'hard' | 'expert';
+  animation: 'full' | 'reduced' | 'minimal';
+  haptics: boolean;
+  sounds: boolean;
+}
+
+export interface DynamicTimingConfig {
+  perfectZoneSize: number;
+  goodZoneSize: number;
+  zonePosition: number;
+  animationSpeed: number;
 }

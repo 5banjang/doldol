@@ -27,8 +27,9 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({ items }) => {
   return (
     <Box
       position="relative"
-      w="full"
-      h="400px"
+      w={{ base: "90vw", md: "400px", lg: "500px" }}
+      maxW="90vw"
+      h={{ base: "200px", md: "250px", lg: "300px" }}
       display="flex"
       alignItems="center"
       justifyContent="center"
@@ -56,11 +57,11 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({ items }) => {
         }}
       />
 
-      {/* 중앙 뽑기 슬롯 */}
+      {/* 반응형 중앙 뽑기 슬롯 */}
       <Box
         position="relative"
-        w="300px"
-        h="200px"
+        w={{ base: "80%", md: "300px" }}
+        h={{ base: "70%", md: "200px" }}
         bg="white"
         borderRadius="lg"
         border="4px solid white"
@@ -75,7 +76,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({ items }) => {
           {animationItems.slice(0, 5).map((item, index) => (
             <MotionText
               key={`${item.id}-${index}`}
-              fontSize="lg"
+              fontSize={{ base: "md", md: "lg" }}
               fontWeight="bold"
               color="#2D3748"
               textAlign="center"
